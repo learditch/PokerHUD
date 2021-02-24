@@ -1,4 +1,7 @@
 import tkinter as tk
+import numpy as nm 
+import pytesseract 
+import cv2 
 from PIL import Image, ImageTk, ImageGrab, ImageEnhance
 
 root = tk.Tk()
@@ -10,6 +13,34 @@ def show_image(image):
     tk.Label(win, image=win.image).pack()
     win.grab_set()
     win.wait_window(win)
+
+#canny edge detection
+def canny(image):
+    return cv2.Canny(image, 100, 200)
+
+#opening - erosion followed by dilation
+def opening(image):
+    kernel = np.ones((5,5),np.uint8)
+    return cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+# get grayscale image
+def get_grayscale(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# noise removal
+def remove_noise(image):
+    return cv2.medianBlur(image,5)
+
+#thresholding
+def thresholding(image):
+    return cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+def imToString(img):   
+    # http://manpages.ubuntu.com/manpages/bionic/man1/tesseract.1.html
+    custom_config = r'--oem 3 --psm 10'
+    # need to do something to img here
+    pytesseract.image_to_string(img, config=custom_config)
+    print(get_grayscale(img)) 
 
 def area_sel():
     x1 = y1 = x2 = y2 = 0
@@ -55,7 +86,7 @@ def area_sel():
     root.deiconify()  # restore root window
     # show the capture image
     if roi_image:
-        show_image(roi_image)
+        imToString(roi_image)
 
 tk.Button(root, text='select area', width=30, command=area_sel).pack()
 
